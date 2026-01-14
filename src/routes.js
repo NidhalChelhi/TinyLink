@@ -2,6 +2,7 @@ const express = require("express");
 const storage = require("./storage");
 const { generateShortCode, isValidUrl } = require("./utils");
 const config = require("./config");
+const { urlsCreated, urlRedirects } = require("./metrics");
 
 const router = express.Router();
 
@@ -39,6 +40,9 @@ router.post("/shorten", (req, res) => {
 
   // Save to storage
   storage.save(shortCode, url);
+
+  // Increment metric
+  urlsCreated.inc();
 
   // Return response
   res.status(201).json({
@@ -87,6 +91,9 @@ router.get("/:shortCode", (req, res) => {
 
   // Increment click counter
   storage.incrementClicks(shortCode);
+
+  // Increment metric
+  urlRedirects.inc();
 
   // Redirect to original URL
   res.redirect(301, urlData.originalUrl);
