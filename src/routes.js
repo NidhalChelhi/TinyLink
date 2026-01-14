@@ -49,6 +49,28 @@ router.post("/shorten", (req, res) => {
   });
 });
 
+// GET /stats/:shortCode - Get statistics for a short URL
+router.get("/stats/:shortCode", (req, res) => {
+  const { shortCode } = req.params;
+
+  const urlData = storage.get(shortCode);
+
+  if (!urlData) {
+    return res.status(404).json({
+      error: "Short URL not found",
+      message: `No statistics found for short code: ${shortCode}`,
+    });
+  }
+
+  res.json({
+    shortCode: shortCode,
+    originalUrl: urlData.originalUrl,
+    clicks: urlData.clicks,
+    createdAt: urlData.createdAt,
+    shortUrl: `${config.baseUrl}/${shortCode}`,
+  });
+});
+
 // GET /:shortCode - Redirect to original URL
 router.get("/:shortCode", (req, res) => {
   const { shortCode } = req.params;
