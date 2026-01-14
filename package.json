@@ -1,0 +1,24 @@
+{
+  "name": "tinylink",
+  "version": "1.0.0",
+  "description": "A lightweight URL shortener service built with Node. js and Express.",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "url-shortener",
+    "express",
+    "nodejs"
+  ],
+  "author": "NidhalChelhi",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^5.2.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.11"
+  }
+}
