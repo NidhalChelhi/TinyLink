@@ -4,6 +4,7 @@ const routes = require("./routes");
 const { register } = require("./metrics");
 const { metricsMiddleware } = require("./middleware");
 const logger = require("./logger");
+const { ValidationError, NotFoundError, ServerError } = require("./errors");
 
 const app = express();
 
@@ -58,8 +59,36 @@ app.get("/", (req, res) => {
 // API routes
 app.use("/", routes);
 
+// 404 handler (must be after all routes)
+app.use((req, res) => {
+  logger.warn("Route not found", { path: req.path, method: req.method });
+  res.status(404).json({
+    error: "Not Found",
+    message: `Cannot ${req.method} ${req.path}`,
+  });
+});
+
 // Error handling middleware
 app.use((err, req, res, next) => {
+  // Handle known error types
+  if (
+    err instanceof ValidationError ||
+    err instanceof NotFoundError ||
+    err instanceof ServerError
+  ) {
+    logger.warn("Known error occurred", {
+      type: err.name,
+      message: err.message,
+      path: req.path,
+    });
+
+    return res.status(err.statusCode).json({
+      error: err.name,
+      message: err.message,
+    });
+  }
+
+  // Handle unexpected errors
   logger.error("Unhandled error", {
     error: err.message,
     stack: err.stack,
@@ -67,7 +96,7 @@ app.use((err, req, res, next) => {
   });
 
   res.status(500).json({
-    error: "Internal server error",
+    error: "Internal Server Error",
     message:
       config.nodeEnv === "development" ? err.message : "Something went wrong",
   });
