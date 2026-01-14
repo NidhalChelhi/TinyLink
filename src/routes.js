@@ -49,4 +49,25 @@ router.post("/shorten", (req, res) => {
   });
 });
 
+// GET /:shortCode - Redirect to original URL
+router.get("/:shortCode", (req, res) => {
+  const { shortCode } = req.params;
+
+  // Get URL from storage
+  const urlData = storage.get(shortCode);
+
+  if (!urlData) {
+    return res.status(404).json({
+      error: "Short URL not found",
+      message: `No URL found for short code: ${shortCode}`,
+    });
+  }
+
+  // Increment click counter
+  storage.incrementClicks(shortCode);
+
+  // Redirect to original URL
+  res.redirect(301, urlData.originalUrl);
+});
+
 module.exports = router;
