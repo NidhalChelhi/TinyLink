@@ -117,7 +117,7 @@ metadata:
   labels:
     app: tinylink
   annotations:
-    nginx. ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/rewrite-target: /
 spec:
   ingressClassName: nginx
   rules:
