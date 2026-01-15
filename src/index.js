@@ -2,7 +2,7 @@ const express = require("express");
 const config = require("./config");
 const routes = require("./routes");
 const { register } = require("./metrics");
-const { metricsMiddleware } = require("./middleware");
+const { tracingMiddleware, metricsMiddleware } = require("./middleware");
 const logger = require("./logger");
 const { ValidationError, NotFoundError, ServerError } = require("./errors");
 
@@ -11,11 +11,13 @@ const app = express();
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(tracingMiddleware); // Add request tracing (x-request-id)
 app.use(metricsMiddleware);
 
-// Request logging middleware
+// Request logging middleware with tracing
 app.use((req, res, next) => {
   logger.http(`${req.method} ${req.path}`, {
+    requestId: req.requestId,
     method: req.method,
     path: req.path,
     ip: req.ip,
