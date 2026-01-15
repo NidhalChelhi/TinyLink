@@ -1,5 +1,8 @@
 # TinyLink - URL Shortener
 
+[![CI Pipeline](https://github.com/NidhalChelhi/tinylink/actions/workflows/ci.yml/badge.svg)](https://github.com/NidhalChelhi/tinylink/actions/workflows/ci.yml)
+[![CD Pipeline](https://github.com/NidhalChelhi/tinylink/actions/workflows/cd.yml/badge.svg)](https://github.com/NidhalChelhi/tinylink/actions/workflows/cd.yml)
+
 A simple, fast, and production-ready URL shortening service built with Node.js and Express.
 
 ## Features
