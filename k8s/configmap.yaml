@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: tinylink-config
+  namespace: tinylink
+  labels:
+    app: tinylink
+data:
+  NODE_ENV: "production"
+  PORT: "3000"
+  BASE_URL: "http://tinylink.local"
