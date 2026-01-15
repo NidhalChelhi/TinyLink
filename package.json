@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node src/index.js",
     "dev": "nodemon src/index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest --coverage --forceExit",
+    "test:watch": "jest --watch"
   },
   "keywords": [
     "url-shortener",
@@ -22,6 +23,8 @@
     "winston": "^3.19.0"
   },
   "devDependencies": {
-    "nodemon": "^3.1.11"
+    "jest": "^30.2.0",
+    "nodemon": "^3.1.11",
+    "supertest": "^7.2.2"
   }
 }
