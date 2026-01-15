@@ -1,0 +1,162 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: tinylink
+  labels:
+    app: tinylink
+    environment: production
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: tinylink-config
+  namespace: tinylink
+  labels:
+    app: tinylink
+data:
+  NODE_ENV: "production"
+  PORT: "3000"
+  BASE_URL: "http://tinylink.local"
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tinylink
+  namespace: tinylink
+  labels:
+    app: tinylink
+    version: v1
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: tinylink
+  template:
+    metadata:
+      labels:
+        app: tinylink
+        version: v1
+    spec:
+      containers:
+        - name: tinylink
+          image: tinylink:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 3000
+              protocol: TCP
+          env:
+            - name: NODE_ENV
+              valueFrom:
+                configMapKeyRef:
+                  name: tinylink-config
+                  key: NODE_ENV
+            - name: PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: tinylink-config
+                  key: PORT
+            - name: BASE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: tinylink-config
+                  key: BASE_URL
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "256Mi"
+              cpu: "200m"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3000
+            initialDelaySeconds: 10
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 3000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+      restartPolicy: Always
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: tinylink-service
+  namespace: tinylink
+  labels:
+    app: tinylink
+spec:
+  type: ClusterIP
+  selector:
+    app: tinylink
+  ports:
+    - name: http
+      port: 80
+      targetPort: 3000
+      protocol: TCP
+  sessionAffinity: None
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: tinylink-ingress
+  namespace: tinylink
+  labels:
+    app: tinylink
+  annotations:
+    nginx. ingress.kubernetes.io/rewrite-target: /
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: tinylink.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: tinylink-service
+                port:
+                  number: 80
+
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: tinylink-hpa
+  namespace: tinylink
+  labels:
+    app: tinylink
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: tinylink
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
